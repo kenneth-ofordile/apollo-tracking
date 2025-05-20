@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Apollo Team Challenge - Admin Panel</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --primary-color: #4a6cf7;
+      --secondary-color: #1a2b42;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      background-color: #f7f8fc;
+      color: #333;
+    }
+
+    .sidebar {
+      background-color: var(--secondary-color);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      padding-top: 20px;
+      transition: all 0.3s;
+      z-index: 1000;
+      width: 250px;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      margin: 5px 0;
+      border-radius: 5px;
+      transition: all 0.3s;
+    }
+
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .sidebar .nav-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .logo-container {
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-container img {
+      max-width: 40px;
+      margin-right: 10px;
+    }
+
+    .logo-container span {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .header {
+      background-color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    .content-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .content-card h3 {
+      margin-top: 0;
+      color: var(--secondary-color);
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .content-card h3 i {
+      margin-right: 10px;
+      color: var(--primary-color);
+    }
+
+    .team-color-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .color-option {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: transform 0.2s;
+    }
+
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+
+    .color-option.selected {
+      border: 2px solid #333;
+      transform: scale(1.1);
+    }
+
+    .icon-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .icon-option {
+      width: 40px;
+      height: 40px;
+      border-radius: 5px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #f5f5f5;
+      transition: all 0.2s;
+    }
+
+    .icon-option:hover {
+      background-color: #e9e9e9;
+      transform: scale(1.05);
+    }
+
+    .icon-option.selected {
+      background-color: var(--primary-color);
+      color: white;
+      transform: scale(1.05);
+    }
+
+    .team-member-list {
+      margin-top: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .team-member-item {
+      padding: 8px 15px;
+      background-color: #f8f9fa;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .team-member-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .remove-btn {
+      cursor: pointer;
+      color: var(--danger-color);
+    }
+
+    .team-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .team-card-header {
+      padding: 15px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    .team-info {
+      display: flex;
+      align-items: center;
+    }
+
+    .team-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: white;
+    }
+
+    .team-name {
+      font-weight: 600;
+      font-size: 16px;
+      margin: 0;
+    }
+
+    .team-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .team-card-body {
+      padding: 20px;
+    }
+
+    .team-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 15px;
+      margin-bottom: 15px;
+    }
+
+    .stat-item {
+      background-color: #f8f9fa;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #6c757d;
+      text-transform: uppercase;
+    }
+
+    .team-member-section {
+      margin-top: 15px;
+    }
+
+    .member-count {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 10px;
+    }
+
+    .members-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .member-item {
+      background-color: #f8f9fa;
+      padding: 8px 12px;
+      border-radius: 5px;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .progress-section {
+      margin: 15px 0;
+    }
+
+    .progress-bar-container {
+      background-color: #f1f1f1;
+      height: 10px;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .history-entry {
+      padding: 10px 15px;
+      border-left: 3px solid var(--primary-color);
+      background-color: #f8f9fa;
+      margin-bottom: 10px;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .history-date {
+      font-size: 12px;
+      color: #6c757d;
+    }
+
+    .history-value {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .page-section {
+      display: none;
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 70px;
+      }
+
+      .sidebar .nav-link span {
+        display: none;
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 0;
+      }
+
+      .logo-container span {
+        display: none;
+      }
+
+      .logo-container {
+        justify-content: center;
+      }
+
+      .logo-container img {
+        margin-right: 0;
+      }
+
+      .main-content {
+        margin-left: 70px;
+      }
+    }
+
+    /* Date picker style override */
+    .date-picker {
+      background-color: white;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      padding: 0.375rem 0.75rem;
+    }
+
+    /* Custom switch styling */
+    .form-switch .form-check-input {
+      width: 45px;
+      height: 22px;
+    }
+
+    .form-switch .form-check-input:checked {
+      background-color: var(--primary-color);
+    }
+
+    /* Save feedback notification */
+    .save-feedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      animation: fadeOut 2s ease-in-out;
+      z-index: 1050; /* Ensure it's above other content */
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Error message styling */
+    .error-message {
+      color: var(--danger-color);
+      text-align: center;
+      margin-top: 15px;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" style="width: 250px;">
+    <div class="logo-container">
+      <img src="https://i.postimg.cc/FsbVGcBB/apollo-logomark-full-colour.png" alt="Apollo Logo">
+      <span>Apollo Admin</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link active" href="#" id="dashboard-link">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#" id="teams-link">
+          <i class="fas fa-users"></i>
+          <span>Manage Teams</span>
+        </a>
+      </li>
+
+      <li class="nav-item mt-4">
+        <a class="nav-link" href="tracker.html" target="_blank">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Public Tracker</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h2 id="page-title">Dashboard</h2>
+      <div>
+        <button class="btn btn-outline-primary" id="save-all-btn">
+          <i class="fas fa-save me-2"></i>Save All Changes
+        </button>
+      </div>
+    </div>
+
+    <div class="page-section active" id="dashboard-section">
+      <div class="row">
+        <div class="col-md-8">
+          <div class="content-card">
+            <h3><i class="fas fa-tachometer-alt"></i>Challenge Overview</h3>
+            <div class="row mb-4">
+              <div class="col-md-3">
+                <div class="card text-center p-3">
+                  <h4 id="days-remaining" class="mb-0 fw-bold text-primary">--</h4>
+                  <small class="text-muted">Days Remaining</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center p-3">
+                  <h4 id="teams-count" class="mb-0 fw-bold text-primary">--</h4>
+                  <small class="text-muted">Teams</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center p-3">
+                  <h4 id="total-members" class="mb-0 fw-bold text-primary">--</h4>
+                  <small class="text-muted">Participants</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <div class="card text-center p-3">
+                  <h4 id="avg-completion" class="mb-0 fw-bold text-primary">--%</h4>
+                  <small class="text-muted">Avg. Completion</small>
+                </div>
+              </div>
+            </div>
+
+            <h5 class="mb-3">Team Progress Overview</h5>
+            <div id="team-progress-overview">
+              <div class="text-center my-3" id="progress-loading">Loading progress...</div>
+              <div class="text-danger text-center my-3" id="progress-error" hidden></div>
+            </div>
+          </div>
+
+          <div class="content-card">
+            <h3><i class="fas fa-calendar-alt"></i>Recent Updates</h3>
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Team</th>
+                    <th>Update</th>
+                    <th>Distance Added</th>
+                    <th>Actions</th> </tr>
+                </thead>
+                <tbody id="recent-updates-body">
+                  <tr><td colspan="5" class="text-center" id="updates-loading">Loading updates...</td></tr> <tr><td colspan="5" class="text-danger text-center" id="updates-error" hidden></td></tr> </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-4">
+          <div class="content-card">
+            <h3><i class="fas fa-cog"></i>Quick Settings</h3>
+            <form id="settings-form">
+              <div class="mb-3">
+                <label class="form-label">Challenge Start Date</label>
+                <input type="date" class="form-control" id="quick-start-date">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Challenge End Date</label>
+                <input type="date" class="form-control" id="quick-end-date">
+              </div>
+
+              <div class="mb-3 form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="public-tracker-switch">
+                <label class="form-check-label" for="public-tracker-switch">Public Tracker Visible</label>
+              </div>
+              </form>
+          </div>
+
+          <div class="content-card">
+            <h3><i class="fas fa-trophy"></i>Leaderboard</h3>
+            <ol class="list-group list-group-numbered" id="leaderboard-list">
+              <li class="list-group-item text-center" id="leaderboard-loading">Loading leaderboard...</li>
+              <li class="list-group-item text-danger text-center" id="leaderboard-error" hidden></li>
+            </ol>
+          </div>
+
+          <div class="content-card">
+            <h3><i class="fas fa-edit"></i>Update Team Distance</h3>
+            <form id="update-distance-form">
+              <div class="mb-3">
+                <label class="form-label">Select Team</label>
+                <select class="form-select" id="update-team-select">
+                  </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Current Total Distance (miles)</label>
+                <input type="number" class="form-control" id="current-total-distance" step="0.1" min="0" value="0" readonly>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">New Total Distance (miles)</label>
+                <input type="number" class="form-control" id="new-total-distance" step="0.1" min="0" value="0">
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Date of Update</label>
+                <input type="date" class="form-control" id="update-date">
+              </div>
+              <button type="submit" class="btn btn-success w-100">Update Distance</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-section" id="teams-section">
+      <p class="text-center my-5">This section would contain team management content.</p>
+      <p class="text-center my-5">For now, please navigate to `teams.html` directly for team management.</p>
+    </div>
+  </div>
+
+  <div class="save-feedback" id="save-feedback">
+    <i class="fas fa-check-circle me-2"></i>Changes saved successfully!
+  </div>
+
+  <div class="error-message" id="global-error" hidden></div>
+
+  <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="confirmationModalLabel">Confirm Action</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="confirmationModalBody">
+          Are you sure you want to proceed?
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    // ── I am purposely leaving my anon keys and connection endpoint here. I am not a web developer and can't be bothered to create separate config files for it ──
+
+    // ── Supabase configuration ──
+    const SUPABASE_URL = 'https://tctimllpszmwhxzlrcud.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjdGltbGxwc3ptd2h4emxyY3VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxNDYzMDQsImV4cCI6MjA2MjcyMjMwNH0.JVRgvqOoDFYlPaJIXyAGasOlEFNtG7wxkArYSmXf0lI';
+    // ─────────────────────────────
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Global constant for the target challenge distance
+    const TARGET_CHALLENGE_DISTANCE = 969; // Based on your static examples
+
+    // Global variable to store initial settings for change detection
+    let initialChallengeSettings = null;
+
+    // Global variable to store initial team data for comparison (especially for distance updates)
+    let initialTeamsData = [];
+
+    // Variable to store the resolve function for the confirmation modal promise
+    let resolveConfirmation;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadDashboardData();
+      setupEventListeners();
+      // Set today's date for the update distance form
+      document.getElementById('update-date').valueAsDate = new Date(); // Updated ID
+    });
+
+    /**
+     * Fetches and loads all dashboard data from Supabase.
+     */
+    async function loadDashboardData() {
+      const globalErrorDiv = document.getElementById('global-error');
+      globalErrorDiv.hidden = true; // Hide any previous global errors
+
+      try {
+        // --- Fetch Challenge Settings ---
+        const { data: settings, error: settingsError } = await supabase
+          .from('challenge_settings')
+          .select('*')
+          .single(); // Assuming a single row for settings
+
+        if (settingsError) {
+          console.error('Error loading challenge settings:', settingsError);
+          globalErrorDiv.textContent = `Error loading settings: ${settingsError.message}`;
+          globalErrorDiv.hidden = false;
+          // If settings don't exist, provide default values
+          initialChallengeSettings = {
+            id: null, // Will be inserted if null
+            start_date: new Date().toISOString().split('T')[0],
+            end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0], // 1 year from now
+            public_tracker_visible: true
+          };
+        } else {
+          initialChallengeSettings = settings;
+        }
+        renderQuickSettings(initialChallengeSettings);
+        calculateAndDisplayDaysRemaining(initialChallengeSettings.end_date);
+
+
+        // --- Fetch Teams, Members, and Progress Updates ---
+        // Fetch teams with their members and recent progress updates
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select(`
+            id,
+            name,
+            color,
+            icon,
+            distance,
+            members(id, full_name),
+            progress_updates(id, miles, update_date) `)
+          .order('name', { ascending: true }); // Order teams by name
+
+        if (teamsError) {
+          console.error('Error loading teams data:', teamsError);
+          globalErrorDiv.textContent = `Error loading teams data: ${teamsError.message}`;
+          globalErrorDiv.hidden = false;
+          return;
+        }
+
+        initialTeamsData = teams; // Store for later comparison
+
+        // Render Challenge Overview
+        renderChallengeOverview(teams);
+
+        // Render Team Progress Overview
+        renderTeamProgressOverview(teams);
+
+        // Render Leaderboard
+        renderLeaderboard(teams);
+
+        // Render Recent Updates (combining all team updates)
+        renderRecentUpdates(teams);
+
+        // Populate Quick Add Team dropdown (now Update Team Distance dropdown)
+        populateQuickAddTeamDropdown(teams); // Function name kept for consistency with original call
+
+      } catch (error) {
+        console.error('Unhandled error in loadDashboardData:', error);
+        globalErrorDiv.textContent = `An unexpected error occurred: ${error.message}`;
+        globalErrorDiv.hidden = false;
+      }
+    }
+
+    /**
+     * Sets up all event listeners for the dashboard.
+     */
+    function setupEventListeners() {
+      document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
+      document.getElementById('update-distance-form').addEventListener('submit', handleUpdateTeamDistance); // Updated ID and function name
+
+      // Listener for team selection change in the "Update Distance" section
+      document.getElementById('update-team-select').addEventListener('change', function() {
+        const selectedTeamId = this.value;
+        const selectedTeam = initialTeamsData.find(team => team.id === selectedTeamId);
+        if (selectedTeam) {
+          document.getElementById('current-total-distance').value = selectedTeam.distance || 0;
+          document.getElementById('new-total-distance').value = selectedTeam.distance || 0; // Pre-fill new with current
+        } else {
+          document.getElementById('current-total-distance').value = 0;
+          document.getElementById('new-total-distance').value = 0;
+        }
+      });
+
+      // Sidebar navigation (simple page switching for demonstration)
+      document.getElementById('dashboard-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        document.querySelectorAll('.page-section').forEach(section => section.classList.remove('active'));
+        document.getElementById('dashboard-section').classList.add('active');
+        document.getElementById('page-title').textContent = 'Dashboard';
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => link.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+      });
+
+      document.getElementById('teams-link').addEventListener('click', (e) => {
+        e.preventDefault();
+        // In a real single-page app, you'd load teams.html content here or navigate
+        // For now, we'll just show a placeholder or redirect
+        window.location.href = 'teams.html'; // Redirect to teams.html
+      });
+
+      // Keyboard accessibility for save feedback
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          document.getElementById('save-feedback').style.display = 'none';
+        }
+      });
+
+      // Event listeners for the custom confirmation modal buttons
+      document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
+        if (resolveConfirmation) {
+          resolveConfirmation(true);
+          bootstrap.Modal.getInstance(document.getElementById('confirmationModal')).hide();
+        }
+      });
+
+      document.getElementById('confirmationModal').addEventListener('hidden.bs.modal', () => {
+        if (resolveConfirmation) {
+          resolveConfirmation(false); // Resolve with false if modal is dismissed without confirming
+        }
+      });
+    }
+
+    /**
+     * Renders the Quick Settings section.
+     * @param {Object} settings - The challenge settings object.
+     */
+    function renderQuickSettings(settings) {
+      document.getElementById('quick-start-date').value = settings.start_date || '';
+      document.getElementById('quick-end-date').value = settings.end_date || '';
+      document.getElementById('public-tracker-switch').checked = settings.public_tracker_visible;
+    }
+
+    /**
+     * Calculates and displays the days remaining until the challenge end date.
+     * @param {string} endDateString - The end date in YYYY-MM-DD format.
+     */
+    function calculateAndDisplayDaysRemaining(endDateString) {
+      const endDate = new Date(endDateString);
+      const today = new Date();
+      // Reset time to 00:00:00 for accurate day calculation
+      endDate.setHours(0, 0, 0, 0);
+      today.setHours(0, 0, 0, 0);
+
+      const diffTime = endDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      document.getElementById('days-remaining').textContent = diffDays >= 0 ? diffDays : '0';
+    }
+
+    /**
+     * Renders the Challenge Overview section.
+     * @param {Array} teams - Array of team data.
+     */
+    function renderChallengeOverview(teams) {
+      const totalTeams = teams.length;
+      let totalMembers = 0;
+      let totalMilesCompleted = 0;
+
+      teams.forEach(team => {
+        totalMembers += team.members ? team.members.length : 0;
+        totalMilesCompleted += team.distance || 0;
+      });
+
+      const avgCompletion = totalTeams > 0 ? (totalMilesCompleted / (totalTeams * TARGET_CHALLENGE_DISTANCE)) * 100 : 0;
+
+      document.getElementById('teams-count').textContent = totalTeams;
+      document.getElementById('total-members').textContent = totalMembers;
+      document.getElementById('avg-completion').textContent = `${avgCompletion.toFixed(1)}%`;
+    }
+
+    /**
+     * Renders the Team Progress Overview section.
+     * @param {Array} teams - Array of team data.
+     */
+    function renderTeamProgressOverview(teams) {
+      const container = document.getElementById('team-progress-overview');
+      container.innerHTML = ''; // Clear existing content
+
+      if (teams.length === 0) {
+        container.innerHTML = '<p class="text-center text-muted">No teams to display progress.</p>';
+        return;
+      }
+
+      teams.forEach(team => {
+        const progressPercentage = (team.distance / TARGET_CHALLENGE_DISTANCE) * 100;
+        const progressHtml = `
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div><span class="badge rounded-pill" style="background-color: ${team.color || '#ccc'};">${team.name}</span></div>
+              <div><small>${team.distance || 0} / ${TARGET_CHALLENGE_DISTANCE} miles (${progressPercentage.toFixed(1)}%)</small></div>
+            </div>
+            <div class="progress">
+              <div class="progress-bar" role="progressbar" style="width: ${progressPercentage}%; background-color: ${team.color || '#ccc'};"
+                   aria-valuenow="${progressPercentage.toFixed(1)}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+          </div>
+        `;
+        container.insertAdjacentHTML('beforeend', progressHtml);
+      });
+    }
+
+    /**
+     * Renders the Leaderboard section.
+     * @param {Array} teams - Array of team data.
+     */
+    function renderLeaderboard(teams) {
+      const list = document.getElementById('leaderboard-list');
+      list.innerHTML = ''; // Clear existing content
+
+      if (teams.length === 0) {
+        list.innerHTML = '<li class="list-group-item text-center text-muted">No teams for leaderboard.</li>';
+        return;
+      }
+
+      // Sort teams by distance in descending order
+      const sortedTeams = [...teams].sort((a, b) => (b.distance || 0) - (a.distance || 0));
+
+      sortedTeams.forEach(team => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.innerHTML = `
+          ${team.name}
+          <span class="badge bg-primary rounded-pill">${team.distance || 0} mi</span>
+        `;
+        list.appendChild(listItem);
+      });
+    }
+
+    /**
+     * Renders the Recent Updates table.
+     * @param {Array} teams - Array of team data, including progress_updates.
+     */
+    function renderRecentUpdates(teams) {
+      const tbody = document.getElementById('recent-updates-body');
+      tbody.innerHTML = ''; // Clear existing content
+
+      let allUpdates = [];
+      teams.forEach(team => {
+        if (team.progress_updates && team.progress_updates.length > 0) {
+          team.progress_updates.forEach(update => {
+            allUpdates.push({
+              teamId: team.id, // Add teamId
+              teamName: team.name,
+              teamColor: team.color,
+              updateId: update.id, // Add updateId
+              miles: update.miles,
+              updateDate: update.update_date
+            });
+          });
+        }
+      });
+
+      if (allUpdates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">No recent updates.</td></tr>'; // colspan adjusted
+        return;
+      }
+
+      // Sort all updates by date (most recent first)
+      allUpdates.sort((a, b) => new Date(b.updateDate).getTime() - new Date(a.updateDate).getTime());
+
+      // Limit to top 5-10 updates for brevity, adjust as needed
+      const displayUpdates = allUpdates.slice(0, 10);
+
+      displayUpdates.forEach(update => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${formatDate(update.updateDate)}</td>
+          <td><span class="badge rounded-pill" style="background-color: ${update.teamColor || '#ccc'};">${update.teamName}</span></td>
+          <td>Distance update</td>
+          <td>+${update.miles} miles</td>
+          <td>
+            <button class="btn btn-danger btn-sm delete-update-btn" data-update-id="${update.updateId}" data-team-id="${update.teamId}" data-miles="${update.miles}">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Attach event listeners to delete buttons
+      document.querySelectorAll('.delete-update-btn').forEach(button => {
+        button.addEventListener('click', handleDeleteUpdate);
+      });
+    }
+
+    /**
+     * Populates the Update Team Distance dropdown with available teams and updates current distance.
+     * @param {Array} teams - Array of team data.
+     */
+    function populateQuickAddTeamDropdown(teams) { // Function name kept for consistency with original call
+      const select = document.getElementById('update-team-select'); // Updated ID
+      const currentDistanceInput = document.getElementById('current-total-distance');
+      const newDistanceInput = document.getElementById('new-total-distance');
+      select.innerHTML = ''; // Clear existing options
+
+      if (teams.length === 0) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = 'No teams available';
+        select.appendChild(option);
+        select.disabled = true;
+        currentDistanceInput.value = 0;
+        newDistanceInput.value = 0;
+        return;
+      }
+      select.disabled = false;
+
+      teams.forEach(team => {
+        const option = document.createElement('option');
+        option.value = team.id; // Use team ID as value
+        option.textContent = team.name;
+        select.appendChild(option);
+      });
+
+      // Set initial current and new distance for the first team
+      if (teams.length > 0) {
+        currentDistanceInput.value = teams[0].distance || 0;
+        newDistanceInput.value = teams[0].distance || 0;
+      }
+    }
+
+    /**
+     * Handles the "Save All Changes" button click.
+     */
+    async function saveAllChanges() {
+      const feedback = document.getElementById('save-feedback');
+      const globalErrorDiv = document.getElementById('global-error');
+      globalErrorDiv.hidden = true; // Hide previous errors
+
+      try {
+        // --- Save Challenge Settings ---
+        const currentStartDate = document.getElementById('quick-start-date').value;
+        const currentEndDate = document.getElementById('quick-end-date').value;
+        const currentPublicTrackerVisible = document.getElementById('public-tracker-switch').checked;
+
+        const updatedSettings = {
+          start_date: currentStartDate,
+          end_date: currentEndDate,
+          public_tracker_visible: currentPublicTrackerVisible,
+        };
+
+        // Check if settings have actually changed
+        const settingsChanged =
+          initialChallengeSettings.start_date !== updatedSettings.start_date ||
+          initialChallengeSettings.end_date !== updatedSettings.end_date ||
+          initialChallengeSettings.public_tracker_visible !== updatedSettings.public_tracker_visible;
+
+        if (settingsChanged) {
+          console.log("Updating challenge settings:", updatedSettings);
+          let settingsResult;
+          if (initialChallengeSettings.id) {
+            // Update existing settings row
+            settingsResult = await supabase
+              .from('challenge_settings')
+              .update(updatedSettings)
+              .eq('id', initialChallengeSettings.id);
+          } else {
+            // Insert new settings row (if it didn't exist initially)
+            settingsResult = await supabase
+              .from('challenge_settings')
+              .insert([updatedSettings]);
+          }
+
+          if (settingsResult.error) {
+            console.error('Supabase settings update/insert error:', settingsResult.error);
+            throw settingsResult.error;
+          }
+          console.log('Successfully updated/inserted settings:', settingsResult.data);
+        } else {
+          console.log("No changes detected in challenge settings.");
+        }
+
+        // --- Show success feedback ---
+        feedback.style.display = 'block';
+        setTimeout(() => {
+          feedback.style.display = 'none';
+        }, 2000);
+
+        // Reload all dashboard data to reflect changes and update initial state
+        await loadDashboardData();
+
+      } catch (error) {
+        console.error('Error saving all changes:', error);
+        globalErrorDiv.textContent = `Error saving changes: ${error.message}`;
+        globalErrorDiv.hidden = false;
+      }
+    }
+
+    /**
+     * Handles the "Update Distance" form submission.
+     * @param {Event} event - The form submit event.
+     */
+    async function handleUpdateTeamDistance(event) { // New function name and logic
+      event.preventDefault(); // Prevent default form submission
+
+      const teamId = document.getElementById('update-team-select').value;
+      const newTotalDistance = parseFloat(document.getElementById('new-total-distance').value);
+      const updateDate = document.getElementById('update-date').value;
+
+      const globalErrorDiv = document.getElementById('global-error');
+      globalErrorDiv.hidden = true;
+
+      if (!teamId || isNaN(newTotalDistance) || newTotalDistance < 0 || !updateDate) {
+        globalErrorDiv.textContent = 'Please select a team, enter a valid non-negative total distance, and a date.';
+        globalErrorDiv.hidden = false;
+        return;
+      }
+
+      try {
+        // Find the current team's distance from initialTeamsData
+        const currentTeam = initialTeamsData.find(team => team.id === teamId);
+        let milesAdded = 0;
+
+        if (currentTeam) {
+          milesAdded = newTotalDistance - (currentTeam.distance || 0);
+
+          // 1. Update team's total distance
+          console.log(`Updating total distance for team ${teamId} to ${newTotalDistance}`);
+          const { error: teamUpdateError } = await supabase
+            .from('teams')
+            .update({ distance: newTotalDistance })
+            .eq('id', teamId);
+
+          if (teamUpdateError) {
+            console.error('Supabase team distance update error:', teamUpdateError);
+            throw teamUpdateError;
+          }
+          console.log('Team total distance successfully updated.');
+
+          // 2. Insert new progress update (only if distance changed)
+          if (milesAdded !== 0) {
+            console.log(`Recording progress update: ${milesAdded} miles for team ${teamId} on ${updateDate}`);
+            const { error: progressError } = await supabase
+              .from('progress_updates')
+              .insert([
+                { team_id: teamId, miles: milesAdded, update_date: updateDate }
+              ]);
+
+            if (progressError) {
+              console.error('Supabase progress insert error:', progressError);
+              throw progressError;
+            }
+            console.log('Progress update successfully recorded.');
+          } else {
+            console.log('No change in distance, not recording a progress update.');
+          }
+
+        } else {
+          console.warn(`Team with ID ${teamId} not found in initial data. Cannot update total distance.`);
+          globalErrorDiv.textContent = `Error: Team with ID ${teamId} not found.`;
+          globalErrorDiv.hidden = false;
+          return;
+        }
+
+        // Clear form and show success
+        document.getElementById('new-total-distance').value = newTotalDistance; // Keep the updated value
+        document.getElementById('current-total-distance').value = newTotalDistance; // Update current display
+        document.getElementById('update-date').valueAsDate = new Date(); // Reset date to today
+
+        const feedback = document.getElementById('save-feedback');
+        feedback.textContent = 'Team distance updated successfully!';
+        feedback.style.backgroundColor = 'var(--success-color)';
+        feedback.style.display = 'block';
+        setTimeout(() => {
+          feedback.style.display = 'none';
+          feedback.textContent = 'Changes saved successfully!';
+          feedback.style.backgroundColor = '#28a745';
+        }, 2000);
+
+        // Reload all dashboard data to reflect the new distance and update in overview/leaderboard
+        await loadDashboardData();
+
+      } catch (error) {
+        console.error('Error updating distance:', error);
+        globalErrorDiv.textContent = `Error updating distance: ${error.message}`;
+        globalErrorDiv.hidden = false;
+      }
+    }
+
+    /**
+     * Helper function to show a custom confirmation modal.
+     * @param {string} message - The message to display in the modal.
+     * @returns {Promise<boolean>} A promise that resolves to true if confirmed, false otherwise.
+     */
+    function showConfirmationModal(message) {
+      document.getElementById('confirmationModalBody').textContent = message;
+      const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+      confirmationModal.show();
+
+      return new Promise(resolve => {
+        resolveConfirmation = resolve;
+      });
+    }
+
+    /**
+     * Handles the deletion of a progress update.
+     * @param {Event} event - The click event.
+     */
+    async function handleDeleteUpdate(event) {
+      const globalErrorDiv = document.getElementById('global-error');
+      globalErrorDiv.hidden = true;
+
+      const updateId = event.currentTarget.dataset.updateId;
+      const teamId = event.currentTarget.dataset.teamId;
+      const miles = parseFloat(event.currentTarget.dataset.miles);
+
+      const confirmed = await showConfirmationModal('Are you sure you want to delete this update? This will also adjust the team\'s total distance.');
+
+      if (!confirmed) {
+        return; // User cancelled
+      }
+
+      try {
+        // 1. Delete the progress update
+        console.log(`Deleting progress update with ID: ${updateId}`);
+        const { error: deleteError } = await supabase
+          .from('progress_updates')
+          .delete()
+          .eq('id', updateId);
+
+        if (deleteError) {
+          console.error('Supabase delete progress update error:', deleteError);
+          throw deleteError;
+        }
+        console.log('Progress update successfully deleted.');
+
+        // 2. Update team's total distance
+        const currentTeam = initialTeamsData.find(team => team.id === teamId);
+        if (currentTeam) {
+          const newTotalDistance = (currentTeam.distance || 0) - miles;
+          console.log(`Adjusting total distance for team ${teamId} from ${currentTeam.distance} to ${newTotalDistance}`);
+          const { error: teamUpdateError } = await supabase
+            .from('teams')
+            .update({ distance: newTotalDistance })
+            .eq('id', teamId);
+
+          if (teamUpdateError) {
+            console.error('Supabase team distance adjustment error:', teamUpdateError);
+            throw teamUpdateError;
+          }
+          console.log('Team distance successfully adjusted.');
+        } else {
+          console.warn(`Team with ID ${teamId} not found for distance adjustment.`);
+        }
+
+        // Show success feedback
+        const feedback = document.getElementById('save-feedback');
+        feedback.textContent = 'Update deleted and team distance adjusted!';
+        feedback.style.backgroundColor = 'var(--success-color)';
+        feedback.style.display = 'block';
+        setTimeout(() => {
+          feedback.style.display = 'none';
+          feedback.textContent = 'Changes saved successfully!';
+          feedback.style.backgroundColor = '#28a745';
+        }, 2000);
+
+        // Reload all dashboard data to reflect changes
+        await loadDashboardData();
+
+      } catch (error) {
+        console.error('Error deleting update:', error);
+        globalErrorDiv.textContent = `Error deleting update: ${error.message}`;
+        globalErrorDiv.hidden = false;
+      }
+    }
+
+    /**
+     * Helper function to format date strings.
+     * @param {string} dateString - The date string (e.g., 'YYYY-MM-DD').
+     * @returns {string} Formatted date (e.g., 'Feb 25, 2025').
+     */
+    function formatDate(dateString) {
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString(undefined, options);
+    }
+
+    // Mobile sidebar toggle functionality (from previous code, ensures responsiveness)
+    function setupMobileSidebarToggle() {
+        const mobileWidth = 768;
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        function checkScreenSize() {
+            if (window.innerWidth <= mobileWidth) {
+                sidebar.classList.add('mobile');
+                mainContent.classList.add('mobile');
+            } else {
+                sidebar.classList.remove('mobile');
+                mainContent.classList.remove('mobile');
+            }
+        }
+
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+    }
+  </script>
+</body>
+</html>

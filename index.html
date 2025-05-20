@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Apollo Team Activity Challenge Tracker</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', Arial, sans-serif;
+    }
+    
+    body {
+      background-color: #f7f8fc;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+    
+    /* Header styling */
+    header {
+      background-color: #fff;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px 0;
+    }
+    
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo-title {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-title img {
+      max-width: 120px;
+      margin-right: 20px;
+    }
+    
+    .logo-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a2b42;
+    }
+    
+    .challenge-stats {
+      background-color: #f1f6ff;
+      border-radius: 10px;
+      padding: 15px;
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+    
+    .stat-card {
+      text-align: center;
+      padding: 10px 15px;
+      min-width: 150px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a2b42;
+      margin-bottom: 5px;
+    }
+    
+    .stat-label {
+      font-size: 14px;
+      color: #6b7c93;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Map styling */
+    .map-container {
+      margin: 20px 0;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    #map { 
+      height: 500px; 
+      width: 100%; 
+    }
+    
+    /* Team Rankings Section */
+    .teams-section {
+      margin: 30px 0;
+    }
+    
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #1a2b42;
+      display: flex;
+      align-items: center;
+    }
+    
+    .section-title i {
+      margin-right: 10px;
+      color: #4a6cf7;
+    }
+    
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .team-card {
+      background-color: #fff;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+    }
+    
+    .team-card:hover {
+      transform: translateY(-5px);
+    }
+    
+    .team-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    
+    .team-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: white;
+    }
+    
+    .team-name {
+      font-weight: 600;
+      font-size: 18px;
+    }
+    
+    .team-progress-container {
+      background-color: #f1f1f1;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+    
+    .team-progress-bar {
+      height: 100%;
+      border-radius: 6px;
+    }
+    
+    .team-stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #6b7c93;
+    }
+    
+    .team-rank {
+      font-weight: 600;
+      color: #1a2b42;
+    }
+    
+    .team-footer {
+      margin-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .distance-remaining {
+      font-size: 14px;
+      color: #6b7c93;
+    }
+    
+    .team-pace {
+      font-size: 14px;
+      font-weight: 600;
+      color: #4a6cf7;
+    }
+    
+    /* Responsive rules */
+    @media (max-width: 768px) {
+      .header-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .logo-title {
+        margin-bottom: 15px;
+      }
+      
+      .teams-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      #map {
+        height: 400px;
+      }
+    }
+    
+    /* Map popup styling */
+    .custom-popup .leaflet-popup-content-wrapper {
+      background: #fff;
+      color: #333;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    .custom-popup .leaflet-popup-content {
+      margin: 12px;
+      line-height: 1.5;
+    }
+    
+    .custom-popup .leaflet-popup-tip {
+      background: #fff;
+    }
+    
+    .popup-content {
+      padding: 5px;
+    }
+    
+    .popup-title {
+      font-weight: 600;
+      margin-bottom: 5px;
+      font-size: 16px;
+      color: #1a2b42;
+    }
+    
+    .popup-info {
+      font-size: 14px;
+      color: #6b7c93;
+    }
+    
+    /* Milestone markers on the map */
+    .milestone-marker {
+      text-align: center;
+      width: 25px;
+      height: 25px;
+      border-radius: 50%;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Modal styling */
+    .modal-content {
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #eee;
+      padding: 15px 20px;
+      background-color: #f7f8fc; /* Light background for header */
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a2b42;
+    }
+
+    .modal-body {
+      padding: 20px;
+      color: #333;
+    }
+
+    .list-group-item {
+      border: none;
+      padding: 10px 0;
+      color: #6b7c93;
+      font-size: 15px;
+    }
+
+    .list-group-item:not(:last-child) {
+      border-bottom: 1px solid #eee;
+    }
+
+    .modal-footer {
+      border-top: 1px solid #eee;
+      padding: 15px 20px;
+      background-color: #f7f8fc; /* Light background for footer */
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+    }
+    .modal-body .info-message {
+        font-size: 14px;
+        color: #6b7c93;
+        margin-bottom: 10px;
+        text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo-title">
+          <img src="https://apollo.engineer/wp-content/uploads/2022/06/logo.svg" alt="Apollo Logo">
+          <h1>Team Activity Challenge Tracker</h1>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <div class="container">
+    <div class="challenge-stats">
+      <div class="stat-card">
+        <div class="stat-value" id="total-distance">Loading...</div>
+        <div class="stat-label">Total Route</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="teams-count">Loading...</div>
+        <div class="stat-label">Teams</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="days-left">Loading...</div>
+        <div class="stat-label">Days Left</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="team-leader">Loading...</div>
+        <div class="stat-label">Leading Team</div>
+      </div>
+    </div>
+    
+    <div class="map-container">
+      <div id="map"></div>
+    </div>
+    
+    <div class="teams-section">
+      <h2 class="section-title"><i class="fas fa-medal"></i>Team Rankings</h2>
+      <div class="teams-grid" id="teams-grid">
+        <p class="text-center text-muted w-100" id="teams-loading">Loading teams...</p>
+        <p class="text-center text-danger w-100" id="teams-error" hidden></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="viewMembersModal" tabindex="-1" aria-labelledby="viewMembersModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewMembersModalLabel">Team Members</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="info-message">Click on Close to return to scrolling</p>
+          <ul id="members-list" class="list-group">
+            </ul>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet.awesome-markers@2.0.4/dist/leaflet.awesome-markers.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    // ── I am purposely leaving my anon keys and connection endpoint here. I am not a web developer and can't be bothered to create separate config files for it ──
+
+    // ── Supabase configuration ──
+    const SUPABASE_URL = 'https://tctimllpszmwhxzlrcud.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjdGltbGxwc3ptd2h4emxyY3VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxNDYzMDQsImV4cCI6MjA2MjcyMjMwNH0.JVRgvqOoDFYlPaJIXyAGasOlEFNtG7wxkArYSmXf0lI';
+    // ─────────────────────────────
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Global constant for the target challenge distance (can be fetched from settings if available)
+    let TARGET_CHALLENGE_DISTANCE = 969; // Default value, will be updated if settings provide it
+
+    // Global variable to store processed teams data for easy access by other functions (e.g., modal)
+    let processedTeamsGlobal = [];
+
+    // Map initialization (moved outside DOMContentLoaded to be globally accessible)
+    var map = L.map('map', {
+      zoomControl: false  // We'll reposition zoom control
+    }).setView([55, -3], 6);
+    
+    // Reposition zoom control to the right side
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(map);
+
+    // Add OpenStreetMap tiles with a more modern style
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+      attribution: '©OpenStreetMap, ©CartoDB',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Mapbox Access Token (should be securely managed, but for this example, it's inline)
+    var accessToken = 'pk.eyJ1Ijoia2VsbHlvZm8iLCJhIjoiY202ejF2OGk3MDA2cTJsczhnMTRzdWdzbiJ9.nPTs9LF4lhhp-fGGhtjwnQ';
+
+    // Define waypoints (in [longitude, latitude] order for Mapbox) - INVERTED FOR LAND'S END TO JOHN O'GROATS
+    var waypoints = [
+      [-5.712575489254311, 50.06511385502163],     // Lands End (Start)
+      [-2.60133818934055, 51.45370241336366],     // Bristol
+      [-1.3422934162564328, 52.86990748177639],   // Nottingham
+      [-3.2120641891039803, 55.947267226685526],  // Edinburgh
+      [-2.1212304448624204, 57.14368456812189],   // Aberdeen
+      [-3.0699591384610136, 58.63817205089514]    // John o Groats (End)
+    ];
+
+    // Waypoint names for display - INVERTED TO MATCH WAYPOINTS
+    var waypointNames = [
+      "Land's End",
+      "Bristol",
+      "Nottingham",
+      "Edinburgh",
+      "Aberdeen",
+      "John o' Groats"
+    ];
+
+    // Define office locations
+    var officeLocations = [
+      { name: "Aberdeen", coords: [57.143690388881076, -2.1213162755440798] },
+      { name: "Edinburgh", coords: [55.947267226685526, -3.2120641891039803] },
+      { name: "Nottingham", coords: [52.86991395798882, -1.3423577892676704] },
+      { name: "Bristol", coords: [51.45370241336366, -2.60133818934055] }
+    ];
+
+    // Custom icon for Apollo office locations
+    var apolloOfficeIcon = L.icon({
+      iconUrl: "https://i.postimg.cc/FsbVGcBB/apollo-logomark-full-colour.png",
+      iconSize: [10, 10], // Adjusted size to be the marker
+      iconAnchor: [5, 5], // Anchor at the center of the icon
+      popupAnchor: [0, -15], // Popup appears above the center of the icon
+      shadowUrl: '' // Remove default shadow
+    });
+
+    // Helper function: Haversine distance between two points (in miles)
+    function haversineDistance(latlng1, latlng2) {
+      var R = 6371; // Earth's radius in km
+      var lat1 = latlng1[0] * Math.PI / 180;
+      var lon1 = latlng1[1] * Math.PI / 180;
+      var lat2 = latlng2[0] * Math.PI / 180;
+      var lon2 = latlng2[1] * Math.PI / 180;
+      var dLat = lat2 - lat1;
+      var dLon = lon2 - lon1;
+      var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(lat1) * Math.cos(lat2) *
+              Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      var distanceKm = R * c;
+      return distanceKm * 0.621371; // Convert km to miles
+    }
+
+    // Main function to load all tracker data
+    async function loadTrackerData() {
+      const teamsLoading = document.getElementById('teams-loading');
+      const teamsError = document.getElementById('teams-error');
+      teamsLoading.hidden = false;
+      teamsError.hidden = true;
+
+      try {
+        // --- Fetch Challenge Settings ---
+        const { data: settings, error: settingsError } = await supabase
+          .from('challenge_settings')
+          .select('*')
+          .single();
+
+        if (settingsError && settingsError.code !== 'PGRST116') { // PGRST116 is "No rows found"
+          console.error('Error loading challenge settings:', settingsError);
+          teamsError.textContent = `Error loading settings: ${settingsError.message}`;
+          teamsError.hidden = false;
+          return;
+        }
+
+        let challengeStartDate = new Date();
+        let challengeEndDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)); // Default to 1 year from now
+        let publicTrackerVisible = true;
+
+        if (settings) {
+          challengeStartDate = new Date(settings.start_date);
+          challengeEndDate = new Date(settings.end_date);
+          publicTrackerVisible = settings.public_tracker_visible;
+          // If the challenge_settings table has a target_distance, use it
+          if (settings.target_distance) {
+            TARGET_CHALLENGE_DISTANCE = settings.target_distance;
+          }
+        }
+
+        // Display total route distance
+        document.getElementById('total-distance').textContent = `${TARGET_CHALLENGE_DISTANCE} mi`;
+
+        // Calculate and display days left
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        challengeEndDate.setHours(0, 0, 0, 0);
+        const diffTime = challengeEndDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        document.getElementById('days-left').textContent = diffDays >= 0 ? diffDays : '0';
+
+        // --- Fetch Teams Data ---
+        const { data: teamsData, error: teamsErrorSupabase } = await supabase
+          .from('teams')
+          .select(`
+            id,
+            name,
+            color,
+            icon,
+            distance,
+            members(id, full_name) `);
+
+        if (teamsErrorSupabase) {
+          console.error('Error loading teams data:', teamsErrorSupabase);
+          teamsError.textContent = `Error loading teams: ${teamsErrorSupabase.message}`;
+          teamsError.hidden = false;
+          return;
+        }
+
+        // Process teams data
+        const processedTeams = teamsData.map(team => {
+          const totalMembers = team.members ? team.members.length : 0;
+          
+          // Calculate average daily distance
+          const daysSinceStart = Math.max(1, Math.ceil((today.getTime() - challengeStartDate.getTime()) / (1000 * 60 * 60 * 24)));
+          const averageDaily = team.distance > 0 ? (team.distance / daysSinceStart).toFixed(1) : 0;
+
+          return {
+            id: team.id,
+            name: team.name,
+            distance: team.distance || 0,
+            color: team.color,
+            icon: team.icon,
+            totalMembers: totalMembers,
+            averageDaily: parseFloat(averageDaily),
+            members: team.members || [] // Store members data
+          };
+        });
+
+        // Sort teams by distance (descending)
+        processedTeams.sort((a, b) => b.distance - a.distance);
+        processedTeamsGlobal = processedTeams; // Store globally for modal access
+
+        // Update challenge stats
+        document.getElementById('teams-count').textContent = processedTeams.length;
+        document.getElementById('team-leader').textContent = processedTeams.length > 0 ? processedTeams[0].name : 'N/A';
+
+        // Clear existing map markers (except base map)
+        map.eachLayer(function(layer) {
+          if (layer instanceof L.Marker || layer instanceof L.Polyline) {
+            map.removeLayer(layer);
+          }
+        });
+
+        // Re-add base map tiles after clearing other layers
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          attribution: '©OpenStreetMap, ©CartoDB',
+          maxZoom: 19
+        }).addTo(map);
+
+        // Build the Mapbox Directions API URL
+        var coordinates = waypoints.map(function(coord) {
+          return coord.join(',');
+        }).join(';');
+        var directionsUrl = 'https://api.mapbox.com/directions/v5/mapbox/driving/' +
+                            coordinates +
+                            '?geometries=geojson&overview=full&access_token=' + accessToken;
+
+        // Fetch the route from Mapbox.
+        fetch(directionsUrl)
+          .then(function(response) { 
+            return response.json(); 
+          })
+          .then(function(data) {
+            if (!data.routes || data.routes.length === 0) {
+              console.error('No route found');
+              return;
+            }
+            
+            // Convert the route coordinates from [lon, lat] to [lat, lon] for Leaflet.
+            var routeCoords = data.routes[0].geometry.coordinates.map(function(coord) {
+              return [coord[1], coord[0]];
+            });
+            
+            // Draw the route polyline on the map with improved styling.
+            var routePolyline = L.polyline(routeCoords, { 
+              color: '#4a6cf7', 
+              weight: 5,
+              opacity: 0.8,
+              lineJoin: 'round'
+            }).addTo(map);
+            
+            map.fitBounds(routePolyline.getBounds());
+            
+            // Compute the total route distance in miles.
+            var computedTotalDistanceKm = data.routes[0].distance / 1000;
+            var computedTotalDistance = computedTotalDistanceKm * 0.621371; // in miles
+            TARGET_CHALLENGE_DISTANCE = Math.round(computedTotalDistance); // Update global constant
+            document.getElementById('total-distance').textContent = `${TARGET_CHALLENGE_DISTANCE} mi`;
+            
+            // Helper function: Interpolate a point along the polyline at a given fraction (0 to 1)
+            function getPointAtFraction(polyline, fraction) {
+              var targetDistance = fraction * computedTotalDistance;
+              var traveled = 0;
+              for (var i = 0; i < polyline.length - 1; i++) {
+                var segment = haversineDistance(polyline[i], polyline[i+1]);
+                if (traveled + segment >= targetDistance) {
+                  var ratio = (targetDistance - traveled) / segment;
+                  return [
+                    polyline[i][0] + ratio * (polyline[i+1][0] - polyline[i][0]),
+                    polyline[i][1] + ratio * (polyline[i+1][1] - polyline[i][1])
+                  ];
+                }
+                traveled += segment;
+              }
+              return polyline[polyline.length - 1];
+            }
+            
+            // Add office location markers with the Apollo logomark
+            officeLocations.forEach(function(location) {
+              L.marker(location.coords, { 
+                icon: apolloOfficeIcon,
+                zIndexOffset: 800
+              }).addTo(map)
+                .bindPopup(`
+                  <div class="popup-content">
+                    <div class="popup-title">${location.name}</div>
+                    <div class="popup-info">Apollo Office</div>
+                  </div>
+                `, { className: 'custom-popup' });
+            });
+            
+            // Add milestone markers for each waypoint with improved styling
+            waypoints.forEach(function(waypoint, index) {
+              // Convert from [lon, lat] to [lat, lon] for Leaflet
+              var waypointLatLng = [waypoint[1], waypoint[0]];
+              
+              // Create custom icon for milestones
+              var milestoneIcon = L.divIcon({
+                className: 'milestone-marker',
+                html: '<i class="fas fa-map-marker-alt" style="color: #4a6cf7;"></i>',
+                iconSize: [25, 25],
+                iconAnchor: [12, 12]
+              });
+              
+              if (index === 0) { // First waypoint is now Land's End (Start)
+                // Use a special icon for start
+                var flagIcon = L.divIcon({
+                  className: 'milestone-marker',
+                  html: '<i class="fas fa-flag" style="color: #28a745;"></i>', iconSize: [30, 30],
+                  iconAnchor: [15, 15]
+                });
+                
+                var marker = L.marker(waypointLatLng, { 
+                  icon: flagIcon,
+                  zIndexOffset: 1000
+                }).addTo(map);
+                
+                // Create enhanced popup content
+                var popupContent = `
+                  <div class="popup-content">
+                    <div class="popup-title">${waypointNames[index]}</div>
+                    <div class="popup-info">Start Point</div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { className: 'custom-popup' });
+              } else if (index === waypoints.length - 1) { // Last waypoint is now John O'Groats (Finish)
+                // Use a special icon for finish
+                var flagIcon = L.divIcon({
+                  className: 'milestone-marker',
+                  html: '<i class="fas fa-flag-checkered" style="color: #e74c3c;"></i>', iconSize: [30, 30],
+                  iconAnchor: [15, 15]
+                });
+
+                var marker = L.marker(waypointLatLng, { 
+                  icon: flagIcon,
+                  zIndexOffset: 1000
+                }).addTo(map);
+                
+                // Create enhanced popup content
+                var popupContent = `
+                  <div class="popup-content">
+                    <div class="popup-title">${waypointNames[index]}</div>
+                    <div class="popup-info">Finish Line</div>
+                  </div>
+                `;
+                
+                marker.bindPopup(popupContent, { className: 'custom-popup' });
+              }
+              else {
+                // Regular milestone marker
+                var marker = L.marker(waypointLatLng, { 
+                  icon: milestoneIcon,
+                  zIndexOffset: 500
+                }).addTo(map);
+                
+                marker.bindPopup(`
+                  <div class="popup-content">
+                    <div class="popup-title">${waypointNames[index]}</div>
+                    <div class="popup-info">Milestone</div>
+                  </div>
+                `, { className: 'custom-popup' });
+              }
+            });
+            
+            // Place team markers along the route with improved markers
+            processedTeams.forEach(function(team, index) { // Use processedTeams here
+              var fraction = team.distance / computedTotalDistance;
+              if (fraction > 1) fraction = 1; // cap at 100%
+              var pos = getPointAtFraction(routeCoords, fraction);
+              
+              // Create awesome marker with team color and icon
+              var marker = L.marker(pos, {
+                icon: L.AwesomeMarkers.icon({
+                  icon: team.icon,
+                  markerColor: 'white',
+                  prefix: 'fa',
+                  iconColor: team.color
+                }),
+                title: team.name,
+                zIndexOffset: 1000 - index // Higher ranked teams appear in front
+              }).addTo(map);
+              
+              // Enhanced popup with team details
+              var popupContent = `
+                <div class="popup-content">
+                  <div class="popup-title">${team.name}</div>
+                  <div class="popup-info">
+                    <strong>Distance:</strong> ${team.distance} miles<br>
+                    <strong>Members:</strong> ${team.totalMembers}<br>
+                    <strong>Rank:</strong> #${index + 1}
+                  </div>
+                </div>
+              `;
+              
+              marker.bindPopup(popupContent, { className: 'custom-popup' });
+            });
+            
+            // Generate team cards for the rankings section
+            generateTeamCards(processedTeams, computedTotalDistance); // Use processedTeams here
+            
+          })
+          .catch(function(error) {
+            console.error('Error fetching the route:', error);
+            teamsError.textContent = `Error loading map route: ${error.message}`;
+            teamsError.hidden = false;
+          });
+
+      } catch (error) {
+        console.error('Unhandled error in loadTrackerData:', error);
+        teamsError.textContent = `An unexpected error occurred: ${error.message}`;
+        teamsError.hidden = false;
+      } finally {
+        teamsLoading.hidden = true;
+      }
+    }
+    
+    /**
+     * Function to generate team cards and attach event listeners for "View Members" button.
+     * @param {Array} teams - Array of team data.
+     * @param {number} totalDistance - The total distance of the challenge route.
+     */
+    function generateTeamCards(teams, totalDistance) {
+      var teamsGrid = document.getElementById('teams-grid');
+      teamsGrid.innerHTML = ''; // Clear any existing content
+      
+      if (teams.length === 0) {
+        teamsGrid.innerHTML = '<p class="text-center text-muted w-100">No teams to display.</p>';
+        return;
+      }
+
+      // Get the challenge start date from the global settings (assuming it's loaded by now)
+      // This is a simplified approach; in a larger app, you might pass it or fetch it more directly.
+      const challengeStartDate = new Date(document.getElementById('days-left').textContent === 'Loading...' ? new Date() : new Date().setDate(new Date().getDate() - parseInt(document.getElementById('days-left').textContent))); // Approximation, ideally from settings
+
+      teams.forEach(function(team, index) {
+        // Calculate percentage complete and remaining distance
+        var percentComplete = (team.distance / totalDistance) * 100;
+        if (percentComplete > 100) percentComplete = 100;
+        
+        var remainingDistance = totalDistance - team.distance;
+        if (remainingDistance < 0) remainingDistance = 0;
+        
+        // Calculate days since challenge start for per-day metrics
+        const today = new Date();
+        const daysSinceStart = Math.max(1, Math.ceil((today.getTime() - challengeStartDate.getTime()) / (1000 * 60 * 60 * 24)));
+
+        // Calculate miles per member per day
+        const milesPerMemberPerDay = team.totalMembers > 0 ? (team.averageDaily / team.totalMembers).toFixed(2) : 0;
+
+        // Create team card
+        var teamCard = document.createElement('div');
+        teamCard.className = 'team-card';
+        
+        // Team header with rank, icon and name
+        var teamHeader = document.createElement('div');
+        teamHeader.className = 'team-header';
+        
+        var teamIcon = document.createElement('div');
+        teamIcon.className = 'team-icon';
+        teamIcon.style.backgroundColor = team.color;
+        teamIcon.innerHTML = `<i class="fas fa-${team.icon}"></i>`;
+        
+        var teamNameElement = document.createElement('div');
+        teamNameElement.className = 'team-name';
+        teamNameElement.innerHTML = `${team.name} <span class="team-rank">#${index + 1}</span>`;
+        
+        teamHeader.appendChild(teamIcon);
+        teamHeader.appendChild(teamNameElement);
+        
+        // Progress bar
+        var progressContainer = document.createElement('div');
+        progressContainer.className = 'team-progress-container';
+        
+        var progressBar = document.createElement('div');
+        progressBar.className = 'team-progress-bar';
+        progressBar.style.width = `${percentComplete}%`;
+        progressBar.style.backgroundColor = team.color;
+        
+        progressContainer.appendChild(progressBar);
+        
+        // Team stats
+        var teamStats = document.createElement('div');
+        teamStats.className = 'team-stats';
+        
+        var distanceComplete = document.createElement('div');
+        distanceComplete.textContent = `${team.distance} miles (${Math.round(percentComplete)}%)`;
+        
+        var membersCount = document.createElement('div');
+        membersCount.textContent = `${team.totalMembers} members`;
+        
+        teamStats.appendChild(distanceComplete);
+        teamStats.appendChild(membersCount);
+        
+        // Team footer with remaining distance and pace
+        var teamFooter = document.createElement('div');
+        teamFooter.className = 'team-footer';
+        
+        var distanceRemaining = document.createElement('div');
+        distanceRemaining.className = 'distance-remaining';
+        distanceRemaining.textContent = `${Math.round(remainingDistance)} miles to go`;
+        
+        var teamPace = document.createElement('div');
+        teamPace.className = 'team-pace';
+        teamPace.innerHTML = `${team.averageDaily} mi/day <span style="font-size: 0.8em; color: #999;">(${milesPerMemberPerDay} per member)</span>`;
+        
+        // New button for viewing members
+        var viewMembersBtn = document.createElement('button');
+        viewMembersBtn.className = 'btn btn-info btn-sm view-members-btn';
+        viewMembersBtn.textContent = 'View Members';
+        viewMembersBtn.dataset.teamId = team.id; // Store team ID for lookup
+        
+        teamFooter.appendChild(distanceRemaining);
+        teamFooter.appendChild(teamPace);
+        teamFooter.appendChild(viewMembersBtn); // Add the button
+        
+        // Assemble the card
+        teamCard.appendChild(teamHeader);
+        teamCard.appendChild(progressContainer);
+        teamCard.appendChild(teamStats);
+        teamCard.appendChild(teamFooter); // This will include the new button
+        
+        // Add the card to the grid
+        teamsGrid.appendChild(teamCard);
+      });
+
+      // Attach event listeners to view members buttons after all cards are generated
+      document.querySelectorAll('.view-members-btn').forEach(button => {
+        button.addEventListener('click', handleViewMembers);
+      });
+    }
+
+    /**
+     * Handles the click event for "View Members" button.
+     * @param {Event} event - The click event.
+     */
+    function handleViewMembers(event) {
+      const teamId = event.currentTarget.dataset.teamId;
+      const team = processedTeamsGlobal.find(t => t.id === teamId);
+
+      if (team && team.members) {
+        document.getElementById('viewMembersModalLabel').textContent = `${team.name} Members`;
+        const membersList = document.getElementById('members-list');
+        membersList.innerHTML = ''; // Clear previous members
+
+        if (team.members.length > 0) {
+          team.members.forEach(member => {
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = member.full_name;
+            membersList.appendChild(listItem);
+          });
+        } else {
+          const listItem = document.createElement('li');
+          listItem.className = 'list-group-item text-muted';
+          listItem.textContent = 'No members found for this team.';
+          membersList.appendChild(listItem);
+        }
+
+        const viewMembersModal = new bootstrap.Modal(document.getElementById('viewMembersModal'));
+        viewMembersModal.show();
+      }
+    }
+
+    // Call the main data loading function when the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', loadTrackerData);
+  </script>
+</body>
+</html>

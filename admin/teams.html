@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Apollo Team Challenge - Member Management</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --primary-color: #4a6cf7;
+      --secondary-color: #1a2b42;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --warning-color: #ffc107;
+      --info-color: #17a2b8;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    body {
+      background-color: #f7f8fc;
+      color: #333;
+    }
+
+    .sidebar {
+      background-color: var(--secondary-color);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      padding-top: 20px;
+      transition: all 0.3s;
+      z-index: 1000;
+      width: 250px;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.7);
+      padding: 10px 20px;
+      margin: 5px 0;
+      border-radius: 5px;
+      transition: all 0.3s;
+    }
+
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .sidebar .nav-link i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .logo-container {
+      padding: 15px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-container img {
+      max-width: 40px;
+      margin-right: 10px;
+    }
+
+    .logo-container span {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .main-content {
+      margin-left: 250px;
+      padding: 20px;
+      transition: all 0.3s;
+    }
+
+    .header {
+      background-color: white;
+      padding: 15px 20px;
+      border-radius: 10px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h2 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--secondary-color);
+    }
+
+    .team-card {
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .team-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px 20px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .team-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 15px;
+      color: white;
+    }
+
+    .team-title {
+      display: flex;
+      align-items: center;
+    }
+
+    .team-name {
+      font-weight: 600;
+      font-size: 18px;
+      margin: 0;
+    }
+
+    .member-count {
+      background-color: #f1f6ff;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      margin-left: 10px;
+    }
+
+    .team-body {
+      padding: 20px;
+    }
+
+    .members-list {
+      margin-bottom: 15px;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 15px;
+      background-color: #f8f9fa;
+      margin-bottom: 8px;
+      border-radius: 5px;
+      transition: all 0.2s;
+    }
+
+    .member-item:hover {
+      background-color: #f0f0f0;
+    }
+
+    .member-name {
+      font-weight: 500;
+    }
+
+    .remove-btn {
+      color: #dc3545;
+      cursor: pointer;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+
+    .remove-btn:hover {
+      opacity: 1;
+    }
+
+    .member-form {
+      display: flex;
+      gap: 10px;
+    }
+
+    .member-form .form-control {
+      border-radius: 5px;
+    }
+
+    .save-feedback {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      display: none;
+      animation: fadeOut 2s ease-in-out;
+      z-index: 1050; /* Ensure it's above other content */
+    }
+
+    @keyframes fadeOut {
+      0% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .team-progress {
+      margin-top: 10px;
+      margin-bottom: 15px;
+    }
+
+    .progress {
+      height: 10px;
+      border-radius: 5px;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 70px;
+      }
+
+      .sidebar .nav-link span {
+        display: none;
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 0;
+      }
+
+      .logo-container span {
+        display: none;
+      }
+
+      .logo-container {
+        justify-content: center;
+      }
+
+      .logo-container img {
+        margin-right: 0;
+      }
+
+      .main-content {
+        margin-left: 70px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="logo-container">
+      <img src="https://i.postimg.cc/FsbVGcBB/apollo-logomark-full-colour.png" alt="Apollo Logo">
+      <span>Apollo Admin</span>
+    </div>
+    <ul class="nav flex-column">
+      <li class="nav-item">
+        <a class="nav-link" href="dashboard.html">
+          <i class="fas fa-tachometer-alt"></i>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link active" href="teams.html">
+          <i class="fas fa-users"></i>
+          <span>Manage Teams</span>
+        </a>
+      </li>
+
+      <li class="nav-item mt-4">
+        <a class="nav-link" href="tracker.html" target="_blank">
+          <i class="fas fa-external-link-alt"></i>
+          <span>View Public Tracker</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h2>Manage Team Members</h2>
+      <div>
+        <button id="save-btn" class="btn btn-primary">
+          <i class="fas fa-save me-2"></i>Save Changes
+        </button>
+      </div>
+    </div>
+
+    <div id="loading" class="text-center my-5">Loading teams…</div>
+    <div class="row" id="teams-row">
+      </div>
+    <div id="error" class="text-danger text-center my-5" hidden></div>
+  </div>
+
+  <div class="save-feedback" id="save-feedback">
+    <i class="fas fa-check-circle me-2"></i>Changes saved successfully!
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+    // ── Supabase configuration ──
+    const SUPABASE_URL = 'https://tctimllpszmwhxzlrcud.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjdGltbGxwc3ptd2h4emxyY3VkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDcxNDYzMDQsImV4cCI6MjA2MjcyMjMwNH0.JVRgvqOoDFYlPaJIXyAGasOlEFNtG7wxkArYSmXf0lI';
+    // ─────────────────────────────
+
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Target distance for progress calculation (assuming 969 miles based on static examples)
+    const TARGET_DISTANCE = 969;
+
+    // Store the initial state of team members when loaded
+    let initialTeamMembers = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadTeams();
+      setupSaveButton();
+      setupMobileSidebarToggle();
+    });
+
+    async function loadTeams() {
+      const container = document.getElementById('teams-row');
+      const loading = document.getElementById('loading');
+      const errorDiv = document.getElementById('error');
+      errorDiv.hidden = true; // Hide previous errors
+
+      // Ensure loading indicator is visible while fetching
+      loading.hidden = false;
+
+      // Fetch teams and their members
+      const { data: teams, error } = await supabase
+        .from('teams')
+        .select('id, name, color, icon, distance, members(id, full_name)') // Select member id and full_name
+        .order('name', { ascending: true });
+
+      loading.hidden = true; // Hide loading indicator after fetch
+      if (error) {
+        errorDiv.textContent = `Error loading teams: ${error.message}`;
+        errorDiv.hidden = false;
+        return;
+      }
+
+      // Clear any placeholder text
+      container.innerHTML = '';
+
+      // Store the initial state of members
+      initialTeamMembers = {};
+      teams.forEach(team => {
+          initialTeamMembers[team.id] = team.members.map(m => ({ id: m.id, full_name: m.full_name }));
+      });
+
+
+      teams.forEach(team => {
+        // Build a team card column
+        const col = document.createElement('div');
+        col.className = 'col-md-6 mb-4';
+
+        const card = document.createElement('div');
+        card.className = 'team-card';
+
+        // Header
+        const header = document.createElement('div');
+        header.className = 'team-header d-flex justify-content-between align-items-center';
+
+        const titleWrap = document.createElement('div');
+        titleWrap.className = 'team-title d-flex align-items-center';
+
+        const iconDiv = document.createElement('div');
+        iconDiv.className = 'team-icon';
+        iconDiv.style.backgroundColor = team.color;
+        iconDiv.innerHTML = `<i class="fas fa-${team.icon}"></i>`;
+
+        const nameEl = document.createElement('h3');
+        nameEl.className = 'team-name ms-2';
+        nameEl.textContent = team.name;
+
+        // Member count
+        const memberCountSpan = document.createElement('span');
+        memberCountSpan.className = 'member-count';
+        memberCountSpan.id = `${team.id}-count`; // Use team ID for unique ID
+        memberCountSpan.textContent = `${team.members.length} members`;
+
+        titleWrap.append(iconDiv, nameEl, memberCountSpan);
+        header.appendChild(titleWrap);
+
+        // Distance badge
+        const badge = document.createElement('span');
+        // Determine badge color based on progress
+        const progressPercentage = (team.distance / TARGET_DISTANCE) * 100;
+        if (progressPercentage >= 90) {
+            badge.className = 'badge bg-success';
+        } else if (progressPercentage >= 50) {
+            badge.className = 'badge bg-warning text-dark';
+        } else {
+            badge.className = 'badge bg-info text-dark';
+        }
+        badge.textContent = `${team.distance} mi`;
+
+        header.appendChild(badge);
+
+        // Body
+        const body = document.createElement('div');
+        body.className = 'team-body';
+
+        // Progress bar
+        const progressDiv = document.createElement('div');
+        progressDiv.className = 'team-progress';
+        progressDiv.innerHTML = `
+            <div class="d-flex justify-content-between mb-1">
+                <small>${team.distance} of ${TARGET_DISTANCE} miles</small>
+                <small>${progressPercentage.toFixed(1)}% complete</small>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" role="progressbar" style="width: ${progressPercentage}%; background-color: ${team.color};"
+                     aria-valuenow="${progressPercentage.toFixed(1)}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        `;
+        body.appendChild(progressDiv);
+
+        // Members list
+        const membersDiv = document.createElement('div');
+        membersDiv.className = 'members-list';
+        membersDiv.id = `${team.id}-members`; // Use team ID for unique ID
+
+        if (team.members.length > 0) {
+          team.members.forEach(m => {
+            const item = document.createElement('div');
+            item.className = 'member-item d-flex justify-content-between align-items-center';
+            // Store member ID in a data attribute
+            item.dataset.memberId = m.id;
+            item.innerHTML = `<span class="member-name">${m.full_name}</span> <i class="fas fa-times remove-btn"></i>`;
+            membersDiv.appendChild(item);
+          });
+        } else {
+          const empty = document.createElement('div');
+          empty.textContent = '(no members)';
+          membersDiv.appendChild(empty);
+        }
+        body.appendChild(membersDiv);
+
+        // Add member form
+        const memberForm = document.createElement('form');
+        memberForm.className = 'member-form';
+        memberForm.dataset.teamId = team.id; // Store team ID
+        memberForm.innerHTML = `
+            <input type="text" class="form-control" placeholder="Enter member name">
+            <button type="submit" class="btn btn-primary">Add</button>
+        `;
+        body.appendChild(memberForm);
+
+
+        // Append parts
+        card.append(header, body);
+        col.appendChild(card);
+        container.appendChild(col);
+
+        // Add event listeners after elements are added to the DOM
+        setupRemoveButtons(membersDiv);
+        setupAddMemberForm(memberForm);
+      });
+    }
+
+    // Function to set up event listeners for remove buttons
+    function setupRemoveButtons(membersListElement) {
+        const removeButtons = membersListElement.querySelectorAll('.remove-btn');
+        removeButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                removeMember(this);
+            });
+        });
+    }
+
+    // Function to set up event listeners for add member forms
+    function setupAddMemberForm(formElement) {
+        formElement.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const input = this.querySelector('input');
+            const memberName = input.value.trim();
+            const teamId = this.dataset.teamId;
+
+            if (memberName) {
+                addMemberToTeam(teamId, memberName);
+                input.value = ''; // Clear input
+            }
+        });
+    }
+
+    // Function to add a member (client-side only for now)
+    function addMemberToTeam(teamId, memberName) {
+        const membersList = document.getElementById(`${teamId}-members`);
+        const countElement = document.getElementById(`${teamId}-count`);
+
+        // Remove "(no members)" placeholder if it exists
+        const emptyPlaceholder = membersList.querySelector('div');
+        if (emptyPlaceholder && emptyPlaceholder.textContent === '(no members)') {
+            membersList.removeChild(emptyPlaceholder);
+        }
+
+        // Create new member item
+        const memberItem = document.createElement('div');
+        memberItem.className = 'member-item d-flex justify-content-between align-items-center';
+        // We don't have a Supabase ID yet, so we won't add data-member-id here.
+        // The identifyMemberChanges function will detect this as a new member.
+        memberItem.innerHTML = `
+          <span class="member-name">${memberName}</span>
+          <i class="fas fa-times remove-btn"></i>
+        `;
+
+        // Add to list
+        membersList.appendChild(memberItem);
+
+        // Update count
+        const currentCount = membersList.querySelectorAll('.member-item').length;
+        countElement.textContent = `${currentCount} members`;
+
+        // Add event listener to the new remove button
+        const removeBtn = memberItem.querySelector('.remove-btn');
+        removeBtn.addEventListener('click', function() {
+            removeMember(this);
+        });
+    }
+
+
+    // Function to remove team members (client-side only for now)
+    function removeMember(btn) {
+        const memberItem = btn.parentElement;
+        const membersList = memberItem.parentElement;
+        const teamId = membersList.id.replace('-members', ''); // Get team ID from list ID
+        const countElement = document.getElementById(`${teamId}-count`);
+
+        // Remove member item
+        membersList.removeChild(memberItem);
+
+        // Update count
+        const newCount = membersList.querySelectorAll('.member-item').length;
+        countElement.textContent = `${newCount} members`;
+
+        // Add "(no members)" placeholder if the list is empty
+        if (newCount === 0) {
+            const empty = document.createElement('div');
+            empty.textContent = '(no members)';
+            membersList.appendChild(empty);
+        }
+
+        // Note: The actual removal from the database happens in the save button handler
+        // using the data-member-id stored on the element if it was an existing member.
+    }
+
+    // Save button functionality
+    function setupSaveButton() {
+        const saveButton = document.getElementById('save-btn');
+        saveButton.addEventListener('click', async function() {
+            const feedback = document.getElementById('save-feedback');
+            const errorDiv = document.getElementById('error');
+            errorDiv.hidden = true; // Hide previous errors
+
+            // Collect the current state of members from the DOM
+            const currentMembersState = getCurrentMembersState();
+
+            // Identify changes (added and removed members)
+            const changes = identifyMemberChanges(initialTeamMembers, currentMembersState);
+
+            try {
+                console.log("Saving data to Supabase...");
+                console.log("Changes to save:", changes);
+
+                // --- Perform Supabase Operations ---
+
+                // 1. Insert new members
+                for (const newMember of changes.added) {
+                    console.log("Adding member:", newMember.full_name, "to team:", newMember.teamId);
+                    const { data, error } = await supabase
+                        .from('members')
+                        .insert([
+                            { team_id: newMember.teamId, full_name: newMember.full_name }
+                        ]);
+                    if (error) {
+                        console.error('Supabase insert error:', error);
+                        throw error; // Throw to trigger the catch block
+                    }
+                    console.log('Successfully added member:', data);
+                }
+
+                // 2. Delete removed members
+                for (const removedMemberId of changes.removed) {
+                     console.log("Removing member with ID:", removedMemberId);
+                     const { error } = await supabase
+                        .from('members')
+                        .delete()
+                        .eq('id', removedMemberId);
+                     if (error) {
+                         console.error('Supabase delete error:', error);
+                         throw error; // Throw to trigger the catch block
+                     }
+                     console.log(`Successfully removed member with ID: ${removedMemberId}`);
+                }
+
+                // --- End Supabase Operations ---
+
+                console.log("Changes saved successfully to Supabase!");
+                feedback.style.display = 'block'; // Show success feedback
+
+                // Hide the feedback after animation
+                setTimeout(() => {
+                    feedback.style.display = 'none';
+                }, 2000);
+
+                // Reload teams to show the updated state from the database, including new IDs for added members
+                await loadTeams();
+
+            } catch (error) {
+                console.error('Error saving data:', error);
+                // Show an error message to the user
+                errorDiv.textContent = `Error saving changes: ${error.message}`;
+                errorDiv.hidden = false;
+            }
+        });
+    }
+    // Function to get the current state of members from the DOM, including data-member-id for existing members
+    function getCurrentMembersState() {
+        const currentState = {};
+        const teamCards = document.querySelectorAll('.team-card');
+
+        teamCards.forEach(card => {
+            const teamId = card.querySelector('.members-list').id.replace('-members', '');
+            const memberElements = card.querySelectorAll('.members-list .member-item');
+            currentState[teamId] = Array.from(memberElements).map(item => {
+                return {
+                    // Use data-member-id for existing members, undefined for new ones
+                    id: item.dataset.memberId,
+                    full_name: item.querySelector('.member-name').textContent
+                };
+            });
+        });
+        return currentState;
+    }
+
+    // Function to compare initial and current member states to find changes
+    function identifyMemberChanges(initialState, currentState) {
+        const added = [];
+        const removed = [];
+
+        // Identify added members
+        for (const teamId in currentState) {
+            const currentMembers = currentState[teamId];
+            const initialMembers = initialState[teamId] || [];
+
+            currentMembers.forEach(currentMember => {
+                // If a current member doesn't have an ID (meaning it was added client-side)
+                // or if its ID is not found in the initial state for this team
+                const isExisting = initialMembers.some(initialMember => initialMember.id === currentMember.id);
+                if (!currentMember.id || !isExisting) {
+                    added.push({ teamId: teamId, full_name: currentMember.full_name });
+                }
+            });
+        }
+
+        // Identify removed members
+        for (const teamId in initialState) {
+            const initialMembers = initialState[teamId];
+            const currentMembers = currentState[teamId] || [];
+
+            initialMembers.forEach(initialMember => {
+                // If an initial member's ID is not found in the current state for this team
+                const isStillPresent = currentMembers.some(currentMember => currentMember.id === initialMember.id);
+                if (!isStillPresent) {
+                    removed.push(initialMember.id);
+                }
+            });
+        }
+
+        return { added, removed };
+    }
+
+
+    // Mobile sidebar toggle functionality
+    function setupMobileSidebarToggle() {
+        const mobileWidth = 768;
+        const sidebar = document.querySelector('.sidebar');
+        const mainContent = document.querySelector('.main-content');
+
+        function checkScreenSize() {
+            if (window.innerWidth <= mobileWidth) {
+                sidebar.classList.add('mobile');
+                mainContent.classList.add('mobile');
+            } else {
+                sidebar.classList.remove('mobile');
+                mainContent.classList.remove('mobile');
+            }
+        }
+
+        // Check on load and resize
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+    }
+
+    // Add keyboard accessibility
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        // Close any open popups or modals
+        document.getElementById('save-feedback').style.display = 'none';
+      }
+    });
+
+  </script>
+  </body>
+</html>
